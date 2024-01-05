@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Version 0.0
+# Version 0.1
 
 from Credentials import *
 
@@ -8,22 +8,19 @@ import json
 import smtplib, ssl
 
 client_id = "alertcentral"
-topic = "ALARM"
+topic = "ALERT"
 
-def send_mail(sender_email, receiver_email, subject, text):
-    port = 465  # For SSL
-    smtp_server = "smtp.ionos.com"
-    password = input("Type your password and press enter: ")
-    message = """\
-    Subject: {subject}
+def send_mail(receiver_email, subject, text):
+    message = f"""Subject: {subject}
 
-    {text}"""
-
+        
+    {text}"""   # Warning: do not reformat!!!
     context = ssl.create_default_context()
-    with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
-        server.login(sender_email, password)
-        server.sendmail(sender_email, receiver_email, message)
-
+    print(f"Sending mail to {receiver_email})" # as {message}")
+    
+    with smtplib.SMTP_SSL(mail_smtp_server, mail_smtp_port, context=context) as server:
+        server.login(mail_sender, mail_pwd)
+        server.sendmail(mail_sender, receiver_email, message) 
     
 # Connect to MQTT
 def connect_mqtt() -> mqtt_client:
@@ -43,7 +40,9 @@ def connect_mqtt() -> mqtt_client:
 def subscribe(client: mqtt_client):
     def on_message(client, userdata, msg):
         print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
-        #send_mail()
+        data = json.loads(msg.payload.decode())
+        # print(data["severity"], data["device"], data["message"])
+        send_mail("jszw@jszw.de", data["severity"]+" from "+data["device"], data["message"])
 
     client.subscribe(topic)
     client.on_message = on_message
@@ -57,3 +56,4 @@ def run():
 
 if __name__ == '__main__':
     run()
+    ##send_mail("jszw@jszw.de", "Test Subject", "Test Message")
