@@ -16,7 +16,7 @@ def send_mail(receiver_email, subject, text):
         
     {text}"""   # Warning: do not reformat!!!
     context = ssl.create_default_context()
-    print(f"Sending mail to {receiver_email})" # as {message}")
+    print(f"Sending mail to {receiver_email}") # as {message}")
     
     with smtplib.SMTP_SSL(mail_smtp_server, mail_smtp_port, context=context) as server:
         server.login(mail_sender, mail_pwd)
